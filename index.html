@@ -71,7 +71,43 @@ function save(){localStorage.setItem(key,JSON.stringify(state));updateStats()}
 function updateStats(){let vals=Object.values(state).filter(v=>v===true).length;let total=document.querySelectorAll('input[data-key]').length;document.getElementById('count').textContent=vals;document.getElementById('pct').textContent=(total?Math.round(vals/total*100):0)+'%';document.getElementById('bar').style.width=(total?vals/total*100:0)+'%'}
 function task(label,id){let done=!!state[id];return '<div class="task '+(done?'done':'')+'"><input type="checkbox" data-key="'+id+'" '+(done?'checked':'')+'><label>'+label+'</label></div>'}
 function weekStart(d){let x=new Date(d);let day=(x.getDay()+6)%7;x.setDate(x.getDate()-day);x.setHours(12,0,0,0);return x}
-function renderWeek(){let start=weekStart(new Date(2026,10,9));start.setDate(start.getDate()+offset*7);let end=new Date(start);end.setDate(end.getDate()+6);document.getElementById('weektitle').textContent=start.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'})+' – '+end.toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});let out='';for(let i=0;i<7;i++){let d=new Date(start);d.setDate(d.getDate()+i);let p=plan[i];let date=d.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'2-digit'});out+='<article class="day"><div class="dayhead"><h3>'+date+'</h3><span class="tag">'+p[1]+'</span></div>';for(let j=1;j<7;j+=2){if(p[j]&&p[j]!=='—')out+=task('<b>'+p[j]+':</b> '+p[j+1],d.toISOString().slice(0,10)+'-'+j)}out+='</article>'}document.getElementById('days').innerHTML=out;document.querySelectorAll('input[data-key]').forEach(el=>el.addEventListener('change',e=>{state[e.target.dataset.key]=e.target.checked;save();e.target.parentElement.classList.toggle('done',e.target.checked)}));updateStats()}
+function renderWeek(){
+let start=weekStart(new Date(2026,10,9));start.setDate(start.getDate()+offset*7);
+let end=new Date(start);end.setDate(end.getDate()+6);
+document.getElementById('weektitle').textContent=start.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'})+' – '+end.toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});
+const slots=[
+[{s:'Matemática',k:'Matemática'},{s:'Química',k:'Química'},{s:'Humanas e Linguagens',k:'Humanas e Linguagens'}],
+[{s:'Física',k:'Física'},{s:'Biologia',k:'Biologia'},{s:'Matemática',k:'Matemática'}],
+[{s:'Química',k:'Química'},{s:'Humanas e Linguagens',k:'Humanas e Linguagens'},{s:'Biologia',k:'Biologia'}],
+[{s:'Matemática',k:'Matemática'},{s:'Física',k:'Física'},{s:'Química',k:'Química'}],
+[{s:'Biologia',k:'Biologia'},{s:'Humanas e Linguagens',k:'Humanas e Linguagens'},{s:'Revisão',k:null}]
+];
+let used={};let out='';
+for(let i=0;i<7;i++){
+let d=new Date(start);d.setDate(d.getDate()+i);
+let date=d.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'2-digit'});
+out+='<article class="day"><div class="dayhead"><h3>'+date+'</h3><span class="tag">'+(i<5?'Conteúdo novo':i===5?'Aula + simulado':'Descanso')+'</span></div>';
+if(i<5){
+for(let j=0;j<3;j++){
+let slot=slots[i][j],content='';
+if(slot.k){
+let list=topics[slot.k],idx=(Math.max(0,offset)*3+(used[slot.k]||0))%list.length;
+content=list[idx];used[slot.k]=(used[slot.k]||0)+1;
+}else{content='Revisar os assuntos estudados nesta semana, refazer questões erradas e atualizar o caderno de erros.'}
+out+=task('<b>'+slot.s+':</b> '+content,d.toISOString().slice(0,10)+'-'+j);
+}
+}else if(i===5){
+out+=task('<b>Aulas:</b> 9h–13h no cursinho.',d.toISOString().slice(0,10)+'-0');
+out+=task('<b>Simulado:</b> 14h–19h. Depois, se houver energia, registrar os erros mais importantes.',d.toISOString().slice(0,10)+'-1');
+}else{
+out+='<p class="muted">Dia livre. Sem obrigação de estudo.</p>';
+}
+out+='</article>';
+}
+document.getElementById('days').innerHTML=out;
+document.querySelectorAll('#days input[data-key]').forEach(el=>el.addEventListener('change',e=>{state[e.target.dataset.key]=e.target.checked;save();e.target.parentElement.classList.toggle('done',e.target.checked)}));
+updateStats();
+}
 function renderTopics(){let out='';for(let [subject,items] of Object.entries(topics)){out+='<div class="card" style="margin:14px 0"><h3>'+subject+'</h3><div class="topiclist">';items.forEach((t,i)=>{let id='topic-'+subject+'-'+i;out+='<label><input type="checkbox" data-key="'+id+'" '+(state[id]?'checked':'')+'><span>'+t+'</span></label>'});out+='</div></div>'}document.getElementById('topics').innerHTML=out;document.querySelectorAll('#topics input').forEach(el=>el.addEventListener('change',e=>{state[e.target.dataset.key]=e.target.checked;save()}));updateStats()}
 document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(b.dataset.tab).classList.add('active')}));
 document.getElementById('prev').onclick=()=>{offset--;renderWeek()};document.getElementById('next').onclick=()=>{offset++;renderWeek()};document.getElementById('saveerrors').onclick=()=>{localStorage.setItem('med27-errors',document.getElementById('errorlog').value);document.getElementById('saved').textContent='Salvo neste navegador.'};document.getElementById('errorlog').value=localStorage.getItem('med27-errors')||'';renderWeek();renderTopics();document.querySelectorAll('#ankiChecks input').forEach(el=>{el.checked=!!state[el.dataset.key];el.addEventListener('change',e=>{state[e.target.dataset.key]=e.target.checked;save()})});updateStats();
