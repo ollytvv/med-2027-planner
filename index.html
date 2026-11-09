@@ -71,36 +71,65 @@ function save(){localStorage.setItem(key,JSON.stringify(state));updateStats()}
 function updateStats(){let vals=Object.values(state).filter(v=>v===true).length;let total=document.querySelectorAll('input[data-key]').length;document.getElementById('count').textContent=vals;document.getElementById('pct').textContent=(total?Math.round(vals/total*100):0)+'%';document.getElementById('bar').style.width=(total?vals/total*100:0)+'%'}
 function task(label,id){let done=!!state[id];return '<div class="task '+(done?'done':'')+'"><input type="checkbox" data-key="'+id+'" '+(done?'checked':'')+'><label>'+label+'</label></div>'}
 function weekStart(d){let x=new Date(d);let day=(x.getDay()+6)%7;x.setDate(x.getDate()-day);x.setHours(12,0,0,0);return x}
+function deckHint(subject,content){
+const s=(subject+' '+content).toLowerCase();
+if(subject==='Biologia'){
+if(/água|sais minerais|carboidratos|lipídios|proteínas|enzimas|vitaminas|ácidos nucleicos|bioquím/.test(s))return 'Anki: Biologia → Bioquímica';
+if(/respiração|fermentação|fotossíntese|quimiossíntese|bioenerg/.test(s))return 'Anki: Biologia → Bioenergética';
+if(/membrana|transporte|citoplasma|organelas|mitose|meiose|síntese proteica|mutações/.test(s))return 'Anki: Biologia → Citologia / Estruturas';
+if(/botânica|briófitas|pteridófitas|gimnospermas|angiospermas|seiva|histologia vegetal/.test(s))return 'Anki: Biologia → Botânica';
+if(/fisiologia|digest|circul|respiratória|excret|endócrin|nervos|imun/.test(s))return 'Anki: Biologia → Fisiologia Animal';
+if(/ecologia/.test(s))return 'Anki: Biologia → Ecologia';
+if(/embri|gametogênese|fecundação|clivagem/.test(s))return 'Anki: Biologia → Embriologia';
+if(/evolução|seleção|especiação|origem da vida/.test(s))return 'Anki: Biologia → Evolução / Origem da Vida';
+if(/genética|mendel|heredograma|abo|rh|ligação gênica/.test(s))return 'Anki: Biologia → Genética';
+if(/vírus|bactéria|protozo|fungo|procarioto|protista/.test(s))return 'Anki: Biologia → Procariotos / Protistas / Vírus';
+if(/zoologia|invertebrados|cordados|vertebrados/.test(s))return 'Anki: Biologia → Zoologia';
+return 'Anki: Biologia → confira o subbaralho do assunto';
+}
+if(subject==='Química'){
+if(/eletroquímica|pilha|eletrólise/.test(s))return 'Anki: Química → Eletroquímica';
+if(/equilíbrio|ph|tampão|hidrólise|kps/.test(s))return 'Anki: Química → Equilíbrio';
+if(/orgânica|hidrocarboneto|funções oxigenadas|nitrogenadas|isomeria|polímero|reação orgânica/.test(s))return 'Anki: Química → Química Orgânica';
+if(/termoquímica|entalpia|hess|entropia|gibbs/.test(s))return 'Anki: Química → Termoquímica';
+if(/solução|dispers|coligativ|osmose/.test(s))return 'Anki: Química → Dispersões / Efeitos Coligativos';
+if(/ácido|base|sal|óxido|inorgânica/.test(s))return 'Anki: Química → Inorgânica';
+return 'Anki: Química → confira o subbaralho do assunto';
+}
+if(subject==='Geografia')return 'Anki: Geografia → Cartografia / Geomorfologia / Climatologia (conforme o tema)';
+if(subject==='História')return 'Anki: História → Brasil ou Geral → módulo correspondente';
+if(subject==='Física')return 'Anki: Física → selecione o subbaralho do tema';
+if(subject==='Matemática')return 'Anki: Matemática → selecione o subbaralho do tema';
+return 'Anki: use apenas os cartões do assunto estudado';
+}
 function renderWeek(){
 let start=weekStart(new Date(2026,10,9));start.setDate(start.getDate()+offset*7);
 let end=new Date(start);end.setDate(end.getDate()+6);
 document.getElementById('weektitle').textContent=start.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'})+' – '+end.toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});
 const slots=[
-[{s:'Matemática',k:'Matemática'},{s:'Química',k:'Química'},{s:'Humanas e Linguagens',k:'Humanas e Linguagens'}],
-[{s:'Física',k:'Física'},{s:'Biologia',k:'Biologia'},{s:'Matemática',k:'Matemática'}],
-[{s:'Química',k:'Química'},{s:'Humanas e Linguagens',k:'Humanas e Linguagens'},{s:'Biologia',k:'Biologia'}],
-[{s:'Matemática',k:'Matemática'},{s:'Física',k:'Física'},{s:'Química',k:'Química'}],
-[{s:'Biologia',k:'Biologia'},{s:'Humanas e Linguagens',k:'Humanas e Linguagens'},{s:'Revisão',k:null}]
+[{s:'Matemática',k:'Matemática'},{s:'Química',k:'Química'}],
+[{s:'Física',k:'Física'},{s:'Biologia',k:'Biologia'}],
+[{s:'Biologia',k:'Biologia'},{s:'História',k:'Humanas e Linguagens'}],
+[{s:'Matemática',k:'Matemática'},{s:'Física',k:'Física'}],
+[{s:'Química',k:'Química'},{s:'Geografia',k:'Humanas e Linguagens'}]
 ];
 let used={};let out='';
 for(let i=0;i<7;i++){
 let d=new Date(start);d.setDate(d.getDate()+i);
 let date=d.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'2-digit'});
-out+='<article class="day"><div class="dayhead"><h3>'+date+'</h3><span class="tag">'+(i<5?'Conteúdo novo':i===5?'Aula + simulado':'Descanso')+'</span></div>';
+out+='<article class="day"><div class="dayhead"><h3>'+date+'</h3><span class="tag">'+(i<5?'Estudo direcionado':i===5?'Aula + simulado':'Revisão leve')+'</span></div>';
 if(i<5){
-for(let j=0;j<3;j++){
-let slot=slots[i][j],content='';
-if(slot.k){
-let list=topics[slot.k],idx=(Math.max(0,offset)*3+(used[slot.k]||0))%list.length;
-content=list[idx];used[slot.k]=(used[slot.k]||0)+1;
-}else{content='Revisar os assuntos estudados nesta semana, refazer questões erradas e atualizar o caderno de erros.'}
-out+=task('<b>'+slot.s+':</b> '+content,d.toISOString().slice(0,10)+'-'+j);
+for(let j=0;j<2;j++){
+let slot=slots[i][j],list=topics[slot.k],idx=(Math.max(0,offset)*2+(used[slot.k]||0))%list.length;
+let content=list[idx];used[slot.k]=(used[slot.k]||0)+1;
+out+=task('<b>'+slot.s+':</b> '+content+'<br><span class="muted small">'+deckHint(slot.s,content)+'</span>',d.toISOString().slice(0,10)+'-'+j);
 }
 }else if(i===5){
-out+=task('<b>Aulas:</b> 9h–13h no cursinho.',d.toISOString().slice(0,10)+'-0');
-out+=task('<b>Simulado:</b> 14h–19h. Depois, se houver energia, registrar os erros mais importantes.',d.toISOString().slice(0,10)+'-1');
+out+=task('<b>Cursinho:</b> aula das 9h às 13h.',d.toISOString().slice(0,10)+'-0');
+out+=task('<b>Simulado:</b> 14h–19h. Se houver energia, apenas registrar 3–5 erros importantes.',d.toISOString().slice(0,10)+'-1');
 }else{
-out+='<p class="muted">Dia livre. Sem obrigação de estudo.</p>';
+out+=task('<b>Anki leve:</b> 10–15 minutos de cartões já estudados e vencidos, sem liberar cartões novos.',d.toISOString().slice(0,10)+'-0');
+out+=task('<b>Revisão:</b> escolher um assunto da semana e refazer 5 questões ou reler o caderno de erros por 15–20 minutos.',d.toISOString().slice(0,10)+'-1');
 }
 out+='</article>';
 }
