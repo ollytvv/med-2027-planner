@@ -6,12 +6,12 @@
 <header><div class="eyebrow">Projeto de preparação • vestibulares de Medicina</div><h1>MED <span style="color:var(--accent)">2027</span></h1><p class="sub">Seu espaço de planejamento, execução e revisão. Um dia de cada vez — com constância, questões, videoaulas e Anki.</p></header>
 <main class="wrap"><div class="stats"><div class="stat"><b id="pct">0%</b><span>tarefas concluídas</span></div><div class="stat"><b id="count">0</b><span>tarefas marcadas</span></div><div class="stat"><b>Domingo leve</b><span>revisão curta e opcional</span></div></div><div class="progress"><i id="bar"></i></div>
 <nav><button class="active" data-tab="semana">Minha semana</button><button data-tab="plano">Plano por fases</button><button data-tab="conteudo">Conteúdo completo</button><button data-tab="anki">Anki & revisões</button><button data-tab="erros">Caderno de erros</button></nav>
-<section id="semana" class="section active"><h2>Plano diário</h2><p class="muted">A rotina considera cursinho de segunda a sexta até 15h45, chegada em casa por volta de 16h10, aulas regulares até 11/12/2026; o cursinho entra em recesso até fevereiro. Aos sábados, não há aula nem simulado previstos até março/2027; domingo recebe apenas revisão leve e opcional.</p><div class="weeknav"><button class="btn" id="prev">← Semana anterior</button><strong id="weektitle"></strong><button class="btn" id="next">Próxima semana →</button></div><div id="days"></div></section>
+<section id="semana" class="section active"><h2>Plano diário</h2><p class="muted">O cronograma começa em 1º/12/2026, depois do ciclo de vestibulares de 2026. Até 11/12 ainda pode haver cursinho; de 12/12 a janeiro há recesso. O retorno em fevereiro e a volta de aulas/simulados aos sábados em março são previsões ajustáveis. Domingo fica reservado a uma revisão leve e opcional.</p><div class="weeknav"><button class="btn" id="prev">← Semana anterior</button><strong id="weektitle"></strong><button class="btn" id="next">Próxima semana →</button></div><div id="days"></div></section>
 <section id="plano" class="section"><h2>Estratégia até os vestibulares</h2><div class="grid">
-<div class="card"><span class="tag">Novembro–dezembro 2026</span><h3>Reconstruir a base</h3><p>Começar com 1h30–2h líquidas em dias úteis e crescer gradualmente. Prioridade para Matemática básica/funções, Física de mecânica, Química geral e gramática. Videoaula curta + resumo ativo + questões.</p></div>
-<div class="card"><span class="tag">Janeiro–março 2027</span><h3>Primeira volta do conteúdo</h3><p>Consolidar fundamentos e avançar por todas as grandes áreas. Meta média de 2h30–3h em casa, ajustável conforme cansaço e desempenho no cursinho.</p></div>
-<div class="card"><span class="tag">Abril–junho 2027</span><h3>Fechar lacunas</h3><p>Completar os blocos de conteúdo, aumentar questões interdisciplinares e iniciar provas antigas por banca. Meta média de 3h em dias úteis quando sustentável.</p></div>
-<div class="card"><span class="tag">Julho–setembro 2027</span><h3>Treino direcionado</h3><p>Segunda volta dos assuntos, simulados completos, redação e análise sistemática de erros. Priorizar os vestibulares-alvo e os temas recorrentes.</p></div>
+<div class="card"><span class="tag">Dezembro 2026</span><h3>Começar com constância</h3><p>Início do cronograma em 1º/12, após os vestibulares de 2026. Começar com 1h30–2h líquidas por dia, sem tentar recuperar o tempo anterior. Prioridade para Matemática, Física e Química, com videoaulas curtas, revisão ativa e questões.</p></div>
+<div class="card"><span class="tag">Janeiro–março 2027</span><h3>Construir a base</h3><p>Aproveitar o recesso do cursinho em janeiro para estudar com mais flexibilidade, chegando gradualmente a 2h30–3h por dia. Em fevereiro, conciliar o estudo individual com a retomada das aulas, conforme a data confirmada pelo cursinho.</p></div>
+<div class="card"><span class="tag">Abril–junho 2027</span><h3>Avançar pelo edital</h3><p>Completar os blocos de conteúdo, aumentar questões interdisciplinares e iniciar provas antigas por banca. Meta média de 3h em dias úteis quando sustentável.</p></div>
+<div class="card"><span class="tag">Julho–setembro 2027</span><h3>Revisar e treinar</h3><p>Segunda volta dos assuntos, simulados completos, redação e análise sistemática de erros. Priorizar os vestibulares-alvo e os temas recorrentes.</p></div>
 <div class="card"><span class="tag">Outubro–dezembro 2027</span><h3>Reta final</h3><p>Revisões espaçadas, provas anteriores, repertório de obras e listas de erros. Reduzir conteúdo novo perto das provas e preservar sono e recuperação.</p></div>
 <div class="card"><span class="tag">Regra de sustentabilidade</span><h3>O cursinho já conta</h3><p>Não transformar 6–8 horas extras em obrigação. Em dias ruins, faça o mínimo viável: 25 minutos de revisão + 5 questões. Consistência vale mais que compensações exaustivas.</p></div>
 </div></section>
@@ -105,7 +105,7 @@ return 'Anki: use apenas os cartões do assunto estudado';
 }
 
 function renderWeek(){
-let start=weekStart(new Date(2026,10,9));start.setDate(start.getDate()+offset*7);
+let start=weekStart(new Date(2026,11,1));start.setDate(start.getDate()+offset*7);
 let end=new Date(start);end.setDate(end.getDate()+6);
 document.getElementById('weektitle').textContent=start.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'})+' – '+end.toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});
 const slots=[
@@ -123,8 +123,10 @@ let iso=d.toISOString().slice(0,10);
 let noWeekdayCourse=d>=new Date(2026,11,12)&&d<new Date(2027,1,1);
 let saturdayWithoutCourse=d.getDay()===6&&d<new Date(2027,2,1);
 let courseLabel=noWeekdayCourse?'Recesso do cursinho': 'Estudo direcionado';
-out+='<article class="day"><div class="dayhead"><h3>'+date+'</h3><span class="tag">'+(i===6?'Revisão leve':i===5?(saturdayWithoutCourse?'Sábado de estudo':'Aula + simulado'):courseLabel)+'</span></div>';
-if(i<5){
+out+='<article class="day"><div class="dayhead"><h3>'+date+'</h3><span class="tag">'+(iso==='2026-11-30'?'Pré-início':i===6?'Revisão leve':i===5?(saturdayWithoutCourse?'Sábado de estudo':'Aula + simulado'):courseLabel)+'</span></div>';
+if(iso==='2026-11-30'){
+out+=task('<b>Preparação:</b> organize materiais e escolha um horário de estudo. O cronograma começa amanhã, 1º de dezembro.',iso+'-0');
+}else if(i<5){
 for(let j=0;j<2;j++){
 let slot=slots[i][j],list=topics[slot.k],idx=(Math.max(0,offset)*2+(used[slot.k]||0))%list.length;
 let content=list[idx];used[slot.k]=(used[slot.k]||0)+1;
