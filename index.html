@@ -6,7 +6,7 @@
 <header><div class="eyebrow">Projeto de preparação • vestibulares de Medicina</div><h1>MED <span style="color:var(--accent)">2027</span></h1><p class="sub">Seu espaço de planejamento, execução e revisão. Um dia de cada vez — com constância, questões, videoaulas e Anki.</p></header>
 <main class="wrap"><div class="stats"><div class="stat"><b id="pct">0%</b><span>tarefas concluídas</span></div><div class="stat"><b id="count">0</b><span>tarefas marcadas</span></div><div class="stat"><b>Domingo leve</b><span>revisão curta e opcional</span></div></div><div class="progress"><i id="bar"></i></div>
 <nav><button class="active" data-tab="semana">Minha semana</button><button data-tab="plano">Plano por fases</button><button data-tab="conteudo">Conteúdo completo</button><button data-tab="anki">Anki & revisões</button><button data-tab="erros">Caderno de erros</button></nav>
-<section id="semana" class="section active"><h2>Plano diário</h2><p class="muted">A rotina considera cursinho de segunda a sexta até 15h45, chegada em casa por volta de 16h10, aulas de sábado das 9h às 13h e simulado das 14h às 19h. O sábado já é um dia cheio; domingo recebe apenas uma revisão leve e opcional.</p><div class="weeknav"><button class="btn" id="prev">← Semana anterior</button><strong id="weektitle"></strong><button class="btn" id="next">Próxima semana →</button></div><div id="days"></div></section>
+<section id="semana" class="section active"><h2>Plano diário</h2><p class="muted">A rotina considera cursinho de segunda a sexta até 15h45, chegada em casa por volta de 16h10, aulas regulares até 11/12/2026; o cursinho entra em recesso até fevereiro. Aos sábados, não há aula nem simulado previstos até março/2027; domingo recebe apenas revisão leve e opcional.</p><div class="weeknav"><button class="btn" id="prev">← Semana anterior</button><strong id="weektitle"></strong><button class="btn" id="next">Próxima semana →</button></div><div id="days"></div></section>
 <section id="plano" class="section"><h2>Estratégia até os vestibulares</h2><div class="grid">
 <div class="card"><span class="tag">Novembro–dezembro 2026</span><h3>Reconstruir a base</h3><p>Começar com 1h30–2h líquidas em dias úteis e crescer gradualmente. Prioridade para Matemática básica/funções, Física de mecânica, Química geral e gramática. Videoaula curta + resumo ativo + questões.</p></div>
 <div class="card"><span class="tag">Janeiro–março 2027</span><h3>Primeira volta do conteúdo</h3><p>Consolidar fundamentos e avançar por todas as grandes áreas. Meta média de 2h30–3h em casa, ajustável conforme cansaço e desempenho no cursinho.</p></div>
@@ -76,7 +76,7 @@ const s=(subject+' '+content).toLowerCase();
 if(subject==='Biologia'){
 if(/água|sais minerais|carboidratos|lipídios|proteínas|enzimas|vitaminas|ácidos nucleicos|bioquím/.test(s))return 'Anki: Biologia → Bioquímica';
 if(/respiração|fermentação|fotossíntese|quimiossíntese|bioenerg/.test(s))return 'Anki: Biologia → Bioenergética';
-if(/membrana|transporte|citoplasma|organelas|mitose|meiose|síntese proteica|mutações/.test(s))return 'Anki: Biologia → Citologia / Estruturas';
+if(/membrana|transporte|citoplasma|organelas|mitose|meiose|síntese proteica|mutações/.test(s))return 'Anki: Biologia → Citologia';
 if(/botânica|briófitas|pteridófitas|gimnospermas|angiospermas|seiva|histologia vegetal/.test(s))return 'Anki: Biologia → Botânica';
 if(/fisiologia|digest|circul|respiratória|excret|endócrin|nervos|imun/.test(s))return 'Anki: Biologia → Fisiologia Animal';
 if(/ecologia/.test(s))return 'Anki: Biologia → Ecologia';
@@ -98,10 +98,12 @@ return 'Anki: Química → confira o subbaralho do assunto';
 }
 if(subject==='Geografia')return 'Anki: Geografia → Cartografia / Geomorfologia / Climatologia (conforme o tema)';
 if(subject==='História')return 'Anki: História → Brasil ou Geral → módulo correspondente';
-if(subject==='Física')return 'Anki: Física → selecione o subbaralho do tema';
-if(subject==='Matemática')return 'Anki: Matemática → selecione o subbaralho do tema';
+if(subject==='Física')return 'Anki: ainda não há baralho → criar cartões próprios a partir de fórmulas, conceitos e erros';
+if(subject==='Matemática')return 'Anki: ainda não há baralho → criar cartões próprios a partir de propriedades e erros';
+if(subject==='Português')return 'Anki: ainda não há baralho → criar cartões próprios de gramática e interpretação';
 return 'Anki: use apenas os cartões do assunto estudado';
 }
+
 function renderWeek(){
 let start=weekStart(new Date(2026,10,9));start.setDate(start.getDate()+offset*7);
 let end=new Date(start);end.setDate(end.getDate()+6);
@@ -117,19 +119,34 @@ let used={};let out='';
 for(let i=0;i<7;i++){
 let d=new Date(start);d.setDate(d.getDate()+i);
 let date=d.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'2-digit'});
-out+='<article class="day"><div class="dayhead"><h3>'+date+'</h3><span class="tag">'+(i<5?'Estudo direcionado':i===5?'Aula + simulado':'Revisão leve')+'</span></div>';
+let iso=d.toISOString().slice(0,10);
+let noWeekdayCourse=d>=new Date(2026,11,12)&&d<new Date(2027,1,1);
+let saturdayWithoutCourse=d.getDay()===6&&d<new Date(2027,2,1);
+let courseLabel=noWeekdayCourse?'Recesso do cursinho': 'Estudo direcionado';
+out+='<article class="day"><div class="dayhead"><h3>'+date+'</h3><span class="tag">'+(i===6?'Revisão leve':i===5?(saturdayWithoutCourse?'Sábado de estudo':'Aula + simulado'):courseLabel)+'</span></div>';
 if(i<5){
 for(let j=0;j<2;j++){
 let slot=slots[i][j],list=topics[slot.k],idx=(Math.max(0,offset)*2+(used[slot.k]||0))%list.length;
 let content=list[idx];used[slot.k]=(used[slot.k]||0)+1;
-out+=task('<b>'+slot.s+':</b> '+content+'<br><span class="muted small">'+deckHint(slot.s,content)+'</span>',d.toISOString().slice(0,10)+'-'+j);
+let classNote=noWeekdayCourse?' <span class="muted small">Sem cursinho: use o horário livre para estudar com calma.</span>':'';
+out+=task('<b>'+slot.s+':</b> '+content+'<br><span class="muted small">'+deckHint(slot.s,content)+'</span>'+classNote,iso+'-'+j);
 }
 }else if(i===5){
-out+=task('<b>Cursinho:</b> aula das 9h às 13h.',d.toISOString().slice(0,10)+'-0');
-out+=task('<b>Simulado:</b> 14h–19h. Se houver energia, apenas registrar 3–5 erros importantes.',d.toISOString().slice(0,10)+'-1');
+if(saturdayWithoutCourse){
+let satSlots=[{s:'Física',k:'Física'},{s:'Biologia',k:'Biologia'}];
+for(let j=0;j<2;j++){
+let slot=satSlots[j],list=topics[slot.k],idx=(Math.max(0,offset)*2+(used[slot.k]||0))%list.length;
+let content=list[idx];used[slot.k]=(used[slot.k]||0)+1;
+out+=task('<b>'+slot.s+':</b> '+content+'<br><span class="muted small">'+deckHint(slot.s,content)+'</span>',iso+'-'+j);
+}
+out+=task('<b>Questões:</b> 30–40 minutos para exercícios dos assuntos da semana ou uma prova antiga em blocos.',iso+'-2');
 }else{
-out+=task('<b>Anki leve:</b> 10–15 minutos de cartões já estudados e vencidos, sem liberar cartões novos.',d.toISOString().slice(0,10)+'-0');
-out+=task('<b>Revisão:</b> escolher um assunto da semana e refazer 5 questões ou reler o caderno de erros por 15–20 minutos.',d.toISOString().slice(0,10)+'-1');
+out+=task('<b>Cursinho:</b> aula das 9h às 13h.',iso+'-0');
+out+=task('<b>Simulado:</b> 14h–19h. Se houver energia, apenas registrar 3–5 erros importantes.',iso+'-1');
+}
+}else{
+out+=task('<b>Anki leve:</b> 10–15 minutos de cartões dos assuntos já estudados. Sem cartões novos obrigatórios.',iso+'-0');
+out+=task('<b>Revisão curta:</b> 15–20 minutos para refazer 5 questões ou reler o caderno de erros. O restante do domingo é livre.',iso+'-1');
 }
 out+='</article>';
 }
